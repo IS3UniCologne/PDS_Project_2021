@@ -7,7 +7,7 @@ def data():
 def main():
     df = data()
     print(df.info())
-    df.to_csv(r"https://github.com/DiemLy330/PDS_Yellowcab_UoC.git/data/input/queens.csv")
+    df.to_csv(r"https://github.com/DiemLy330/PDS_Yellowcab_UoC.git/data/output/queens.csv")
 
 if __name__ == '__main__':
     main()
