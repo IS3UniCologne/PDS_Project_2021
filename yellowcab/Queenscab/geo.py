@@ -16,7 +16,7 @@ class geo:
 
         self.data = [i for i in self.d['features'] if 'Queens' in i['properties'].values()]
 
-    # Find central point of each location
+    # Find central point of a specific location
     def get_centroid(self):
         result = []
         for i in self.data:
@@ -26,7 +26,7 @@ class geo:
                     result.append((point.x, point.y))
 
         if len(result) > 0:
-            print(result)
+            return result
         print(f"Location ID {self.location} is not in Queens borough")
 
 
