@@ -1,3 +1,3 @@
 from . import io
 from . import model
-from . import explore
+from . import Queenscab
