@@ -8,9 +8,8 @@ import pandas as pd
     # Hour
     # Weekend(binary)
 # get_duration return trip duration
-# get_position(column) add additional colomns of
-    # Start Position(Longitude and Latitude),
-    #End Position(see above).
+# get_position(column) add additional columns of position(Longitude and Latitude),
+
 
 class trips:
     def __init__(self, filename):
