@@ -1,4 +1,5 @@
 import geojson
+import numpy as np
 from shapely.geometry import shape
 from shapely.geometry import Point
 
@@ -15,19 +16,20 @@ class geo:
             self.d = geojson.load(f)
 
         self.data = [i for i in self.d['features'] if 'Queens' in i['properties'].values()]
+        self.l = np.array([i['properties']['LocationID'] for i in self.data])
 
     # Find central point of a specific location
     def get_centroid(self):
-        result = []
-        for i in self.data:
-            if self.location in i['properties'].values():
-                    t = shape(i['geometry']).centroid
-                    point = Point(t)
-                    result.append((point.x, point.y))
+        if self.location in self.l:
+            index = np.where(self.l == self.location)
+            i = index[0].item()
+            t = shape(self.data[i]['geometry']).centroid
+            point = Point(t)
+            return point.x,point.y
+        else:
+            pass
 
-        if len(result) > 0:
-            return result
-        print(f"Location ID {self.location} is not in Queens borough")
+
 
 
 
