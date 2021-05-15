@@ -1,3 +1,3 @@
 from .geo import *
 from .trips_input import *
-from .time import *
+from .trips_info import *
