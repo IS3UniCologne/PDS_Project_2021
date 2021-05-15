@@ -13,25 +13,21 @@ def data():
     for i in range(1,10):
         raw = pd.read_parquet(f'C:/Users/kyral/Documents/MIB 2019/BI Capstone Project/trip_data/0{i}.parquet', engine='pyarrow')
         df = raw[raw['PULocationID'].isin(queens)]
-        df['Month'] = i
         result.append(df)
     for j in range(10,13):
         raw = pd.read_parquet(f'C:/Users/kyral/Documents/MIB 2019/BI Capstone Project/trip_data/{j}.parquet', engine='pyarrow')
-        df = raw[raw['PULocationID'].isin(queens)]
-        df['Month'] = j
+        df = raw[(raw['PULocationID'].isin(queens))|(raw['DOLocationID'].isin(queens))]
         result.append(df)
     return pd.concat(result)
 
-
 def main():
     df = zone()
-    df.to_csv("C:/Users/kyral/Documents/GitHub/PDS_Yellowcab_UoC/data/output/locationID.csv")
+    #df.to_csv("C:/Users/kyral/Documents/GitHub/PDS_Yellowcab_UoC/data/output/locationID.csv")
 
     d = data()
     print(d.info())
     print(d.head())
-    # d.to_csv("C:/Users/kyral/Documents/GitHub/PDS_Yellowcab_UoC/data/output/trips.csv")
-
+    #d.to_csv("C:/Users/kyral/Documents/GitHub/PDS_Yellowcab_UoC/data/output/trips.csv")
 
 if __name__ == '__main__':
     main()
