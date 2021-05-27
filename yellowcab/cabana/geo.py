@@ -3,8 +3,8 @@ import numpy as np
 from shapely.geometry import shape
 from shapely.geometry import Point
 from descartes import PolygonPatch
-import matplotlib.pyplot as plt
-from .trips_input import *
+# import matplotlib.pyplot as plt
+# from .trips_input import *
 
 #-------------------------------------------------------------------------------
 # Module using geo data to return information
