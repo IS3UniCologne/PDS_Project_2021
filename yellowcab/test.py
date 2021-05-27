@@ -16,17 +16,17 @@ def outlier(series):
 
 def main():
         # Test geo() module,
-    # data = geo()
-    # print(data.get_centroid()) - giving a dict of approx. 260 keys
+    data = geo()
+    # print(data.get_centroid()) # giving a dict of approx. 260 keys
     # print(data.map_locationID(location=10))
     # print(data.get_map())
 #-------------------------------------------------------------
         # Test trip_inputs() module
-    # x = trips()
+    x = trips()
     # l = x.get_borough_locationID(borough="Bronx")
     # print(l)
 
-    # t = x.get_trips(fraction=0.3)
+    t = x.get_trips(fraction=0.01)
     # print(t.info())
     # print(t.head())
     # print(t.iloc[:,2].unique())
@@ -40,7 +40,7 @@ def main():
     # plt.show()
 
 #-------------------------------------------------------------
-        # Test trips_info() module
+       #Test trips_info() module
     # y = trips_info(t)
     # df = y.get_time(column='tpep_dropoff_datetime')
     # print(df.info())
@@ -81,17 +81,19 @@ def main():
     df =pd.concat(result)
     # print(df.info())
     # print(df.describe())
-
-    # x,y,z = outlier(df['trip_distance'])
-    # d = df[(df['trip_distance']<y)&(df['trip_distance']>x)]
-
-    # sns.distplot(d['trip_distance'])
-    # plt.show()
-
+    #
+    # # x,y,z = outlier(df['trip_distance'])
+    # # d = df[(df['trip_distance']<y)&(df['trip_distance']>x)]
+    #
+    # # sns.distplot(d['trip_distance'])
+    # # plt.show()
+    #
     t = trips_info(df)
     test = t.get_position(df)
     x, y, z = outlier(test['longitude'])
-    print(test.info())
+    a, b, c = outlier(test['lattitude'])
+    print(z,c, test.info())
+    # print(test.info())
     # end_time = time.time()
     # print(f'Full file histogram time is: {end_time-start_time}')
 

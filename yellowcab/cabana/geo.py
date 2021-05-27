@@ -3,7 +3,8 @@ import numpy as np
 from shapely.geometry import shape
 from shapely.geometry import Point
 from descartes import PolygonPatch
-# import matplotlib.pyplot as plt
+import geopandas as gpd
+import matplotlib.pyplot as plt
 # from .trips_input import *
 
 #-------------------------------------------------------------------------------
@@ -16,76 +17,83 @@ from descartes import PolygonPatch
 class geo:
     # Get geo data of a specific location
     def __init__(self):
+        # By geopandas
+        self.f = gpd.read_file(r'C:\Users\kyral\Documents\GitHub\PDS_Yellowcab_UoC\data\input\taxi_zones.geojson')
+        self.l = self.f['LocationID'].values
+        self.b = self.f['borough']
 
-        with open(r'C:\Users\kyral\Documents\GitHub\PDS_Yellowcab_UoC\data\input\taxi_zones.geojson') as f:
-            self.d = geojson.load(f)
-
-        self.l = np.array([i['properties']['LocationID'] for i in self.d['features']])
-        self.b = np.unique(np.array([i['properties']['borough'] for i in self.d['features']]))
+        # By geojson
+        # with open(r'C:\Users\kyral\Documents\GitHub\PDS_Yellowcab_UoC\data\input\taxi_zones.geojson') as f:
+        #     self.d = geojson.load(f)
+        #
+        # self.l = np.array([i['properties']['LocationID'] for i in self.d['features']])
+        # self.b = np.unique(np.array([i['properties']['borough'] for i in self.d['features']]))
 
 
     # Find central point of a specific location
     def get_centroid(self):
-        center = []
-        for i in range(len(self.l)):
-            t = shape(self.d['features'][i]['geometry']).centroid
-            point = Point(t)
-            center.append([point.x,point.y])
-        return dict(zip(self.l,center))
-        # return len(self.l)
+        # by geopandas
+        def getXY(pt):
+            return (pt.x, pt.y)
+
+        centroidseries = self.f['geometry'].centroid
+        centroidlist = list(map(getXY, centroidseries))
+        return dict(zip(self.l,centroidlist))
+
+        # By geojson
+        # center = []
+        # for i in range(len(self.l)):
+        #     t = shape(self.d['features'][i]['geometry']).centroid
+        #     point = Point(t)
+        #     center.append([point.x,point.y])
+        # return dict(zip(self.l,center))
 
     # Map a location ID with its central point
     def map_locationID(self,location = 1):
-        try:
-            index = np.where(self.l == location)
-            i = index[0].item()
-            borough = self.d['features'][i]['properties']['borough']
-            poly = self.d['features'][i]['geometry']
+        # by geopandas
+        if location in self.l:
+            df = self.f[self.f['LocationID']==location]
             point = self.get_centroid()[location]
-
-            BLUE = '#6699cc'
-            fig = plt.figure()
-            ax = fig.gca()
-            ax.plot(point[0],point[1], 'ro')
-            ax.add_patch(PolygonPatch(poly, fc=BLUE, ec=BLUE, alpha=0.5, zorder=2))
-            ax.axis('scaled')
-            plt.title(f'Map of location {location}, borough {borough}')
+            df.plot()
+            plt.plot(point[0], point[1], 'ro')
             plt.show()
-        except ValueError:
-            pass
+        else:
+            print(f'No location ID {location} in NYC')
 
-    # def map_borough(self,borough='Queens'):
-    #     x = trips()
-    #     v = [x.get_borough_locationID(i) for i in self.b]
-    #     # d = dict(zip(self.b,v))
-    #     poly = []
-    #     for i in self.b:
-    #         for j in v:
-    #             index = np.where(self.l == j)
-    #             ind = index[0].item()
-    #             t = self.d['features'][ind]['geometry']['coordinates']
-    #             poly.append(t)
-    #
+        # by geojson
+        # try:
+        #     index = np.where(self.l == location)
+        #     i = index[0].item()
+        #     borough = self.d['features'][i]['properties']['borough']
+        #     poly = self.d['features'][i]['geometry']
+        #     point = self.get_centroid()[location]
+        #
+        #     BLUE = '#6699cc'
+        #     fig = plt.figure()
+        #     ax = fig.gca()
+        #     ax.plot(point[0],point[1], 'ro')
+        #     ax.add_patch(PolygonPatch(poly, fc=BLUE, ec=BLUE, alpha=0.5, zorder=2))
+        #     ax.axis('scaled')
+        #     plt.title(f'Map of location {location}, borough {borough}')
+        #     plt.show()
+        # except ValueError:
+        #     print(f'No location ID {location} in borough {borough}')
+
+        #Map NYC areas
+    def get_map(self):
+        # by geopandas
+        self.f.plot()
+        plt.show()
+
+    # by geojson
+    #     poly = [self.d['features'][i]['geometry'] for i in range(len(self.l))]
     #     BLUE = '#6699cc'
     #     fig = plt.figure()
     #     ax = fig.gca()
     #     for p in poly:
     #         ax.add_patch(PolygonPatch(p, fc=BLUE, ec=BLUE, alpha=0.5, zorder=2))
-    #         ax.axis('scaled')
-    #     plt.title(f'The number of of trips start from a region {v[0]}')
+    #     ax.axis('scaled')
     #     plt.show()
-
-
-    # Map NYC areas
-    def get_map(self):
-        poly = [self.d['features'][i]['geometry'] for i in range(len(self.l))]
-        BLUE = '#6699cc'
-        fig = plt.figure()
-        ax = fig.gca()
-        for p in poly:
-            ax.add_patch(PolygonPatch(p, fc=BLUE, ec=BLUE, alpha=0.5, zorder=2))
-        ax.axis('scaled')
-        plt.show()
 
 
 
