@@ -2,27 +2,35 @@ from cabana import *
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import geopandas as gpd
 import pandas as pd
 import seaborn as sns
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import KFold
+from sys import getsizeof
+from sklearn.linear_model import LinearRegression
+from sklearn.decomposition import PCA
 
 def main():
         # Test geo() module,
     data = geo()
-    # print(data.get_centroid()) # giving a dict of approx. 260 keys
+    print(data.get_centroid()) # giving a dict of approx. 260 keys
     # print(data.map_locationID(location=10))
     # print(data.get_map())
+    print(data.df())
+
 #-------------------------------------------------------------
-        # Test trip_inputs() module
-    x = trips_input()
+        #Test trip_inputs() module
+    # x = trips_input()
+    # b = x.borough_list()
     # l = x.get_borough_locationID(borough="Bronx")
-    # print(l)
+    # print(b,l)
 
-    t = x.get_trips(fraction=0.5)
-    print(t.info())
-    print(t.head())
+    # t = x.get_trips(fraction=1)
+    # print(t.info())
+    # print(t.head())
 
-       #  Histogram of passenger_count
+    #     # Histogram of passenger_count
     # counts, bins = np.histogram(t.iloc[:,2], bins=10, range=(0, 10))
     # print(counts, bins)
     # plt.ylim([0,6000000])
@@ -39,11 +47,12 @@ def main():
     # d = y.get_duration()
     # print(d.head())
     # print(d.info())
-
+    #
     # df = y.get_position()
+    # print(df.info())
+
     # a,b,c = y.outlier(df['longitude'])
     # d,e,f = y.outlier(df['latitude'])
-
     # start_location = df[(df['longitude']>a)&(df['longitude']<b)&(df['latitude']>d)&(df['latitude']<e)]
     # sl = start_location.loc[:,['longitude','latitude']]
     # print(sl.describe())
@@ -64,10 +73,76 @@ def main():
     # print(d)
 #--------------------------------------------------------------
     # Plot trip_distance distribution
-    # g,h,k = outlier(df['trip_distance'])
-    # d = df[(df['trip_distance']<y)&(df['trip_distance']>x)]
+    # start_time = time.time()
+    # g,h,k = y.outlier(t['trip_distance'])
+    # d = t[(t['trip_distance']<h)&(t['trip_distance']>g)]
     # sns.distplot(d['trip_distance'])
     # plt.show()
+    # end_time = time.time()
+    # print('Run time', end_time-start_time)
+#--------------------------------------------------------------
+    # # Test Queens
+    # x = trips_input()
+    # df = x.get_queens()
+    # # y = trips_info(df)
+    # # d = y.get_time()
+    # full = pd.concat((df,df,df),axis=0)
+    # start_time = time.time()
+    # # model = LinearRegression()
+    # # model.fit(full.drop(['passenger_count','tpep_dropoff_datetime','tpep_pickup_datetime'],axis=1), full['passenger_count'])
+    # # model.predict(full.drop(['passenger_count','tpep_dropoff_datetime','tpep_pickup_datetime'],axis=1))
+    # pca = PCA(n_components=10)
+    # pca.fit(full.drop(['passenger_count','tpep_dropoff_datetime','tpep_pickup_datetime'],axis=1))
+    # print(pca.explained_variance_ratio_)
+    # end_time = time.time()
+    # print('Run time', end_time-start_time)
+    # print(full.info())
+#---------------------------------------------------------------
+    # #Build model
+    # def pre_process(d):
+    #     d.passenger_count = d.passenger_count.astype('uint8')
+    #     d.RatecodeID = d.RatecodeID.astype('uint8')
+    #     d.payment_type = d.payment_type.astype('uint8')
+    #     d.PULocationID = d.PULocationID.astype('uint16')
+    #     d.DOLocationID = d.DOLocationID.astype('uint16')
+    #     monetary = 'fare_amount tip_amount total_amount tolls_amount extra mta_tax'.split()
+    #     d[monetary] = abs(d[monetary].apply(lambda x: (x * 100).astype('int32')))
+    #     d.improvement_surcharge = d.improvement_surcharge.astype('float32')
+    #     d.congestion_surcharge = d.congestion_surcharge.astype('float32')
+    #     d.trip_distance = abs(d.trip_distance.astype('float32'))
+    #     return d
+    # #
+    # x = trips_input()
+    # t = x.get_trips(fraction=1,optimize=True)
+    # cols = 'tpep_dropoff_datetime tpep_pickup_datetime PULocationID DOLocationID'.split( )
+    # t = t[cols]
+    # y = trips_info(t)
+    # df = y.get_position()
+    # # df2 = y.get_time()
+    # # time_position = pd.concat((df,df2),axis=0,sort=False)
+    # print(df.info())
+    # print(df.head())
+    # # time_position = time_position.drop(['tpep_dropoff_datetime','tpep_pickup_datetime'],axis=1)
+    # tp = trips_info(time_position)
+    # ready = tp.structure()
+    # print(ready.info())
+    # t.to_csv(r'C:/Users/kyral/Documents/MIB 2019/BI Capstone Project/trip_data/full.csv')
+
+        #Chunked full file
+    # start_time = time.time()
+    # data = pd.read_csv(r'C:/Users/kyral/Documents/MIB 2019/BI Capstone Project/trip_data/full.csv',chunksize=100000,sep=',')
+
+    # models = []
+    # for chunk in data:
+    #     chunk = pre_process(chunk)
+    #     model = LinearRegression()
+    #     model.fit(chunk.drop(['passenger_count','tpep_dropoff_datetime','tpep_pickup_datetime'],axis=1), chunk['passenger_count'])
+    #     models.append(model)
+    #     model.predict(chunk.drop(['passenger_count','tpep_dropoff_datetime','tpep_pickup_datetime'],axis=1))
+    # end_time = time.time()
+    # print('Process time:', end_time - start_time)
+
+
 
 if __name__ == '__main__':
     main()

@@ -5,6 +5,7 @@ from shapely.geometry import Point
 from descartes import PolygonPatch
 import geopandas as gpd
 import matplotlib.pyplot as plt
+from pyproj import Proj, transform
 # from .trips_input import *
 
 #-------------------------------------------------------------------------------
@@ -19,8 +20,9 @@ class geo:
     def __init__(self):
         # By geopandas
         self.f = gpd.read_file(r'C:\Users\kyral\Documents\GitHub\PDS_Yellowcab_UoC\data\input\taxi_zones.geojson')
-        self.l = self.f['LocationID'].values
-        self.b = self.f['borough']
+        self.l = self.f['OBJECTID'].values
+        self.id = self.f['OBJECTID'].unique()
+        self.b = self.f['borough'].unique()
 
         # By geojson
         # with open(r'C:\Users\kyral\Documents\GitHub\PDS_Yellowcab_UoC\data\input\taxi_zones.geojson') as f:
@@ -28,17 +30,25 @@ class geo:
         #
         # self.l = np.array([i['properties']['LocationID'] for i in self.d['features']])
         # self.b = np.unique(np.array([i['properties']['borough'] for i in self.d['features']]))
+    def df(self):
+        return self.f.crs
 
+    def borough_ID(self):
+        return self.b, self.id
 
     # Find central point of a specific location
     def get_centroid(self):
         # by geopandas
         def getXY(pt):
             return (pt.x, pt.y)
-
         centroidseries = self.f['geometry'].centroid
         centroidlist = list(map(getXY, centroidseries))
-        return dict(zip(self.l,centroidlist))
+        result = []
+        ny = Proj(init='ESRI:102718',preserve_units=True)
+        for i in centroidlist:
+            result.append(ny(i[0],i[1],inverse =True))
+        return dict(zip(self.l,result))
+
 
         # By geojson
         # center = []
@@ -51,14 +61,11 @@ class geo:
     # Map a location ID with its central point
     def map_locationID(self,location = 1):
         # by geopandas
-        if location in self.l:
-            df = self.f[self.f['LocationID']==location]
-            point = self.get_centroid()[location]
-            df.plot()
-            plt.plot(point[0], point[1], 'ro')
-            plt.show()
-        else:
-            print(f'No location ID {location} in NYC')
+        df = self.f[self.f['OBJECTID']==location]
+        point = self.get_centroid()[location]
+        df.plot()
+        plt.plot(point[0], point[1], 'ro')
+        plt.show()
 
         # by geojson
         # try:

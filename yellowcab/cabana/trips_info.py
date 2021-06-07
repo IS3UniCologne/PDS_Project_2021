@@ -29,22 +29,31 @@ class trips_info:
         # Add new time columns of weekday, month and hour
     def get_time(self, column='tpep_pickup_datetime'):
         df = self.df
-        df['month'] = df[str(column)].dt.month
-        df['hour'] = df[str(column)].dt.hour
+        df['PUmonth'] = df['tpep_pickup_datetime'].dt.month.astype('uint8')
+        df['PUhour'] = df['tpep_pickup_datetime'].dt.hour.astype('uint8')
+        df['DOmonth'] = df['tpep_dropoff_datetime'].dt.month.astype('uint8')
+        df['DOhour'] = df['tpep_dropoff_datetime'].dt.hour.astype('uint8')
 
         # Return day of week
-        df['weekday'] = df[str(column)].dt.weekday
-        df["weekday"] = df["weekday"].replace(list(range(0, 7)), "Mon Tue Wed Thu Fri Sat Sun".split())
+        df['PUweekday'] = df['tpep_pickup_datetime'].dt.weekday
+        df["PUweekday"] = df["PUweekday"].replace(list(range(0, 7)), "Mon Tue Wed Thu Fri Sat Sun".split()).astype('category')
+        df['DOweekday'] = df['tpep_dropoff_datetime'].dt.weekday
+        df["DOweekday"] = df["DOweekday"].replace(list(range(0, 7)), "Mon Tue Wed Thu Fri Sat Sun".split()).astype(
+            'category')
 
         # Return if a date is a weekend
-        df['weekend'] = df[str(column)].dt.weekday
-        df['weekend'] = df['weekend'].replace(list(range(0, 6)), 0).replace(6, 1)
-        return df
+        df['PUweekend'] = df['tpep_pickup_datetime'].dt.weekday
+        df['PUweekend'] = df['PUweekend'].replace(list(range(0, 6)), 0).replace(6, 1).astype('uint8')
+        df['DOweekend'] = df['tpep_dropoff_datetime'].dt.weekday
+        df['DOweekend'] = df['DOweekend'].replace(list(range(0, 6)), 0).replace(6, 1).astype('uint8')
+
+        columns = 'PUmonth PUhour DOmonth DOhour PUweekday DOweekday PUweekend DOweekend'.split( )
+        return df[columns]
 
         # Calculate trip duration
     def get_duration(self):
         df = self.df
-        df['duration'] = df['tpep_dropoff_datetime'] - df['tpep_pickup_datetime']
+        df['duration'] = abs(df['tpep_dropoff_datetime'] - df['tpep_pickup_datetime'])
         return df
 
     # Return aggregate values by time
@@ -55,17 +64,24 @@ class trips_info:
         return d['duration'].describe()
 
         # Return longitude and latitude of a location ID
-    def get_position(self, column='PULocationID'):
+    def get_position(self):
         df = self.df
         f = geo().get_centroid()
 
         # Apply dictionary to column
-        df['dummy'] = df[column].map(f)
-        df.dropna(inplace=True)
-        df[['longitude', 'latitude']] = pd.DataFrame(df['dummy'].tolist(), index=df.index)
-        df = df.drop(['dummy'], axis=1)
-        df['longitude'] = df['longitude'].round().astype(int)
-        df['latitude'] = df['latitude'].round().astype(int)
+        df['PUdummy'] = df['PULocationID'].map(f)
+        df.fillna(method='ffill', inplace=True)
+        df[['PUlon', 'PUlat']] = pd.DataFrame(df['PUdummy'].tolist(), index=df.index)
+        df = df.drop(['PUdummy'], axis=1)
+        df['PUlon'] = df['PUlon'].round().astype('float32')
+        df['PUlat'] = df['PUlat'].round().astype('float32')
+
+        df['DOdummy'] = df['DOLocationID'].map(f)
+        df.fillna(method='ffill', inplace=True)
+        df[['DOlon', 'DOlat']] = pd.DataFrame(df['DOdummy'].tolist(), index=df.index)
+        df = df.drop(['DOdummy'], axis=1)
+        df['DOlon'] = df['DOlon'].round().astype('float32')
+        df['DOlat'] = df['DOlat'].round().astype('float32')
         return df
 
     def outlier(self, series):
@@ -108,4 +124,13 @@ class trips_info:
             t.append(plt.text(x,y,l,fontsize=8))
         plt.show()
 
+    def structure(self):
+        df = self.df
+        df['PUhour_sin'] = np.sin(df.PUhour*(2.*np.pi/24))
+        df['PUhour_cos'] = np.cos(df.PUhour * (2. * np.pi / 24))
 
+        df['PUweekday_sin'] = np.sin(df.PUweekday*(2.*np.pi/7))
+        df['PUweekday_cos'] = np.cos(df.PUweekday * (2. * np.pi / 7))
+
+        df['PUmonth_sin'] = np.sin(df.PUmonth * (2. * np.pi / 12))
+        df['PUmonth_cos'] = np.cos(df.PUmonth * (2. * np.pi / 12))
