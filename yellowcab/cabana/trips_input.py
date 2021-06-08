@@ -1,6 +1,7 @@
 import pandas as pd
 from .geo import *
 from sys import getsizeof
+from .trips_info import *
 
 # Module gets data trips and  additional information include:
     # get_borough_locationID(borough) returns a list of all location ID in that borough, default "borough = 'Queens'"
@@ -53,6 +54,20 @@ class trips_input:
 
     def get_queens(self):
         qb = self.get_borough_locationID(borough='Queens')
-        raw = pd.read_csv(r'C:/Users/kyral/Documents/MIB 2019/BI Capstone Project/trip_data/nyc.csv')
-        df = raw[raw.PULocationID.isin(qb)==True]
-        return df
+        raw = self.get_trips(fraction=1, optimize=True)
+        d = raw[raw.PULocationID.isin(qb)==True]
+        # d.to_csv(r"C:/Users/kyral/Documents/GitHub/PDS_Yellowcab_UoC/data/output/queens.csv")
+
+        # d = pd.read_csv('C:/Users/kyral/Documents/GitHub/PDS_Yellowcab_UoC/data/output/queens.csv')
+        # cols = 'tpep_dropoff_datetime tpep_pickup_datetime PULocationID DOLocationID'.split()
+        # t = d[cols]
+        # y = self.trips_info(t)
+        # df = y.get_position()
+        # df2 = y.get_time()
+        # df3 = y.get_duration()
+        # queens = pd.concat((df,df2),axis=1)
+        # queens['duration'] = df3.duration
+        # queens = queens.drop(cols,axis=1)
+        # full_queens = pd.concat((queens,d),axis=1)
+        # full_queens = full_queens.drop(['tpep_dropoff_datetime', 'tpep_pickup_datetime'], axis=1)
+        return d

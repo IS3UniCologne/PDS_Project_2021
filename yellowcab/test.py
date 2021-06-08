@@ -109,6 +109,7 @@ def main():
     df = x.get_queens()
     print(df.info())
     print(df.head())
+    # df.to_csv(r"C:/Users/kyral/Documents/GitHub/PDS_Yellowcab_UoC/data/output/queens.csv")
 #--------------------------------------------------------------------------------------------------------
     # #Build model
     # def pre_process(d):
