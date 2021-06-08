@@ -5,6 +5,7 @@ from sys import getsizeof
 # Module gets data trips and  additional information include:
     # get_borough_locationID(borough) returns a list of all location ID in that borough, default "borough = 'Queens'"
     # get_trips() returns a given fraction data of random trips data, default: fraction=0.05, optimize = True
+    # get_queens() returns a dataframe of Queens borough only
 #-------------------------------------------------------------------------------------------
 
 class trips_input:
@@ -52,11 +53,6 @@ class trips_input:
 
     def get_queens(self):
         qb = self.get_borough_locationID(borough='Queens')
-        f = '01 02 03 04 05 06 07 08 09 10 11 12'.split()
-        result = []
-        for i in f:
-            raw = pd.read_parquet(f'C:/Users/kyral/Documents/MIB 2019/BI Capstone Project/trip_data/{i}.parquet', engine='pyarrow')
-            df = raw[raw.PULocationID.isin(qb)==True]
-            result.append(df)
-        d = pd.concat(result)
-        return d
+        raw = pd.read_csv(r'C:/Users/kyral/Documents/MIB 2019/BI Capstone Project/trip_data/nyc.csv')
+        df = raw[raw.PULocationID.isin(qb)==True]
+        return df

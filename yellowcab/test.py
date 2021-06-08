@@ -79,24 +79,37 @@ def main():
     # plt.show()
     # end_time = time.time()
     # print('Run time', end_time-start_time)
-#--------------------------------------------------------------
-    # # Test Queens
+#-----------------------------------------------------------------------------
+    # # Create full NYC file
     # x = trips_input()
-    # df = x.get_queens()
-    # # y = trips_info(df)
-    # # d = y.get_time()
-    # full = pd.concat((df,df,df),axis=0)
+    # d = x.get_trips(fraction=1,optimize=True)
     # start_time = time.time()
-    # # model = LinearRegression()
-    # # model.fit(full.drop(['passenger_count','tpep_dropoff_datetime','tpep_pickup_datetime'],axis=1), full['passenger_count'])
-    # # model.predict(full.drop(['passenger_count','tpep_dropoff_datetime','tpep_pickup_datetime'],axis=1))
-    # pca = PCA(n_components=10)
-    # pca.fit(full.drop(['passenger_count','tpep_dropoff_datetime','tpep_pickup_datetime'],axis=1))
-    # print(pca.explained_variance_ratio_)
+    # cols = 'tpep_dropoff_datetime tpep_pickup_datetime PULocationID DOLocationID'.split( )
+    # t = d[cols]
+    # y = trips_info(t)
+    # df = y.get_position()
+    # df2 = y.get_time()
+    # df3 = y.get_duration()
+    # nyc = pd.concat((df,df2),axis=1)
+    # nyc['duration'] = df3.duration
+    # nyc = nyc.drop(cols,axis=1)
+    # # cols_to_use = nyc.columns.difference(t.columns)
+    # full_nyc = pd.concat((nyc,d),axis=1)
+    # full_nyc = full_nyc.drop(['tpep_dropoff_datetime', 'tpep_pickup_datetime'], axis=1)
+    # # tp = trips_info(time_position)
+    # # ready = tp.structure()
     # end_time = time.time()
-    # print('Run time', end_time-start_time)
-    # print(full.info())
-#---------------------------------------------------------------
+    # print('Run time ',end_time-start_time)
+    # print(full_nyc.info())
+    # print(full_nyc.head())
+    # full_nyc.to_csv(r'C:/Users/kyral/Documents/MIB 2019/BI Capstone Project/trip_data/nyc.csv')
+# --------------------------------------------------------------
+    # # Test Queens
+    x = trips_input()
+    df = x.get_queens()
+    print(df.info())
+    print(df.head())
+#--------------------------------------------------------------------------------------------------------
     # #Build model
     # def pre_process(d):
     #     d.passenger_count = d.passenger_count.astype('uint8')
@@ -110,31 +123,8 @@ def main():
     #     d.congestion_surcharge = d.congestion_surcharge.astype('float32')
     #     d.trip_distance = abs(d.trip_distance.astype('float32'))
     #     return d
-    # #
-    x = trips_input()
-    d = x.get_trips(fraction=1,optimize=True)
-    start_time = time.time()
-    cols = 'tpep_dropoff_datetime tpep_pickup_datetime PULocationID DOLocationID'.split( )
-    t = d[cols]
-    y = trips_info(t)
-    df = y.get_position()
-    df2 = y.get_time()
-    df3 = y.get_duration()
-    nyc = pd.concat((df,df2),axis=1)
-    nyc['duration'] = df3.duration
-    nyc = nyc.drop(cols,axis=1)
-    # cols_to_use = nyc.columns.difference(t.columns)
-    full_nyc = pd.concat((nyc,d),axis=1)
-    full_nyc = full_nyc.drop(['tpep_dropoff_datetime', 'tpep_pickup_datetime'], axis=1)
-    # tp = trips_info(time_position)
-    # ready = tp.structure()
-    end_time = time.time()
-    print('Run time ',end_time-start_time)
-    print(full_nyc.info())
-    print(full_nyc.head())
-    # full_nyc.to_csv(r'C:/Users/kyral/Documents/MIB 2019/BI Capstone Project/trip_data/nyc.csv')
 
-        #Chunked full file
+    #Chunked full file
     # start_time = time.time()
     # data = pd.read_csv(r'C:/Users/kyral/Documents/MIB 2019/BI Capstone Project/trip_data/full.csv',chunksize=100000,sep=',')
 
