@@ -53,7 +53,8 @@ class trips_info:
         # Calculate trip duration
     def get_duration(self):
         df = self.df
-        df['duration'] = abs(df['tpep_dropoff_datetime'] - df['tpep_pickup_datetime'])
+        df['duration'] = abs(df['tpep_dropoff_datetime'] - df['tpep_pickup_datetime']).dt.total_seconds()/60
+        df.duration = abs(df.duration).astype('uint16')
         return df
 
     # Return aggregate values by time
@@ -73,15 +74,15 @@ class trips_info:
         df.fillna(method='ffill', inplace=True)
         df[['PUlon', 'PUlat']] = pd.DataFrame(df['PUdummy'].tolist(), index=df.index)
         df = df.drop(['PUdummy'], axis=1)
-        df['PUlon'] = df['PUlon'].round().astype('float32')
-        df['PUlat'] = df['PUlat'].round().astype('float32')
+        df['PUlon'] = df['PUlon'].astype('float32').round(2)
+        df['PUlat'] = df['PUlat'].astype('float32').round(2)
 
         df['DOdummy'] = df['DOLocationID'].map(f)
         df.fillna(method='ffill', inplace=True)
         df[['DOlon', 'DOlat']] = pd.DataFrame(df['DOdummy'].tolist(), index=df.index)
         df = df.drop(['DOdummy'], axis=1)
-        df['DOlon'] = df['DOlon'].round().astype('float32')
-        df['DOlat'] = df['DOlat'].round().astype('float32')
+        df['DOlon'] = df['DOlon'].astype('float32').round(2)
+        df['DOlat'] = df['DOlat'].astype('float32').round(2)
         return df
 
     def outlier(self, series):

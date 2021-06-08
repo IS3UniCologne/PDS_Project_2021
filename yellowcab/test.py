@@ -13,12 +13,11 @@ from sklearn.decomposition import PCA
 
 def main():
         # Test geo() module,
-    data = geo()
-    print(data.get_centroid()) # giving a dict of approx. 260 keys
+    # data = geo()
+    # print(data.get_centroid()) # giving a dict of approx. 260 keys
     # print(data.map_locationID(location=10))
     # print(data.get_map())
-    print(data.df())
-
+    # print(data.df())
 #-------------------------------------------------------------
         #Test trip_inputs() module
     # x = trips_input()
@@ -112,21 +111,28 @@ def main():
     #     d.trip_distance = abs(d.trip_distance.astype('float32'))
     #     return d
     # #
-    # x = trips_input()
-    # t = x.get_trips(fraction=1,optimize=True)
-    # cols = 'tpep_dropoff_datetime tpep_pickup_datetime PULocationID DOLocationID'.split( )
-    # t = t[cols]
-    # y = trips_info(t)
-    # df = y.get_position()
-    # # df2 = y.get_time()
-    # # time_position = pd.concat((df,df2),axis=0,sort=False)
-    # print(df.info())
-    # print(df.head())
-    # # time_position = time_position.drop(['tpep_dropoff_datetime','tpep_pickup_datetime'],axis=1)
+    x = trips_input()
+    d = x.get_trips(fraction=1,optimize=True)
+    start_time = time.time()
+    cols = 'tpep_dropoff_datetime tpep_pickup_datetime PULocationID DOLocationID'.split( )
+    t = d[cols]
+    y = trips_info(t)
+    df = y.get_position()
+    df2 = y.get_time()
+    df3 = y.get_duration()
+    nyc = pd.concat((df,df2),axis=1)
+    nyc['duration'] = df3.duration
+    nyc = nyc.drop(cols,axis=1)
+    # cols_to_use = nyc.columns.difference(t.columns)
+    full_nyc = pd.concat((nyc,d),axis=1)
+    full_nyc = full_nyc.drop(['tpep_dropoff_datetime', 'tpep_pickup_datetime'], axis=1)
     # tp = trips_info(time_position)
     # ready = tp.structure()
-    # print(ready.info())
-    # t.to_csv(r'C:/Users/kyral/Documents/MIB 2019/BI Capstone Project/trip_data/full.csv')
+    end_time = time.time()
+    print('Run time ',end_time-start_time)
+    print(full_nyc.info())
+    print(full_nyc.head())
+    # full_nyc.to_csv(r'C:/Users/kyral/Documents/MIB 2019/BI Capstone Project/trip_data/nyc.csv')
 
         #Chunked full file
     # start_time = time.time()
