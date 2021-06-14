@@ -2,7 +2,9 @@ import pandas as pd
 from .trips_input import *
 from .geo import *
 import datetime
+import os
 import geopandas as gpd
+from yellowcab.io import utils
 
 # Modules returns detailed information of trips for a give trips dataframe
     # get_duration() returns trip duration
@@ -13,13 +15,12 @@ import geopandas as gpd
 
 # and visualize important findings such as:
     # map_best_month() visualize the number of started trips per region in a map for the month with the most trips
-    # the  distribution  of  trip  lengths of each month
-    # heatmap of ....
+
 #----------------------------------------------------------------------------------------------------
 class trips_info:
     def __init__(self, dataframe):
         self.df = dataframe
-        self.g = gpd.read_file(r'C:\Users\kyral\Documents\GitHub\PDS_Yellowcab_UoC\data\input\taxi_zones.geojson')
+        self.g = gpd.read_file(os.path.join(utils.get_data_path(),'input','taxi_zones.geojson'))
 
     def get_duration(self):
         df = self.df
@@ -53,7 +54,7 @@ class trips_info:
         # Calculate trip duration
     def get_duration(self):
         df = self.df
-        df['duration'] = abs(df['tpep_dropoff_datetime'] - df['tpep_pickup_datetime']).dt.total_seconds()/60
+        df['duration'] = abs(df['tpep_dropoff_datetime'] - df['tpep_pickup_datetime']).dt.total_seconds()
         df.duration = abs(df.duration).astype('uint16')
         return df
 
@@ -61,7 +62,12 @@ class trips_info:
     def get_aggregate(self, column='month'):
         df = self.get_time(column='tpep_pickup_datetime')
         df['duration'] = abs(self.get_duration()['duration'])
-        d = df.groupby([column])
+        if column == 'day':
+            d = df.groupby(['PUweekday'])
+        if column == 'hour':
+            d = df.groupby(['PUhour'])
+        else:
+            d = df.groupby(['PUmonth'])
         return d['duration'].describe()
 
         # Return longitude and latitude of a location ID
@@ -93,17 +99,22 @@ class trips_info:
         outliers = sum(0 if x >= low_boundary and x <= up_boundary else 1 for x in series)
         return low_boundary, up_boundary, outliers
 
+    def boro(self):
+        file = pd.read_csv(os.path.join(utils.get_data_path(),'input','taxi_zones.csv'), sep=',')
+        boro = dict(zip(file.LocationID.values, file.Borough.values))
+        return boro
+
     def map_best_month(self):
         df = self.df
 
         # Return borough from PULocationID of the chosen month
-        file = pd.read_csv(r'C:\Users\kyral\Documents\GitHub\PDS_Yellowcab_UoC\data\input\taxi_zones.csv', sep=',')
+        file = pd.read_csv(os.path.join(utils.get_data_path(),'input','taxi_zones.csv'), sep=',')
         boro = dict(zip(file.LocationID.values, file.Borough.values))
 
         # get data of month with the most trip
-        m = self.get_aggregate('month')
-        month = m[m['count'] == m['count'].max()].index[0].item()
-        mon = df[df.month == month]
+        m = self.get_time().groupby(['PUmonth']).count()
+        month = m[m['PUhour'] == m['PUhour'].max()].index[0].item()
+        mon = df[df.PUmonth == month]
         mon['borough'] = mon.loc[:,'PULocationID'].map(boro)
         mon = mon[mon.borough != "Unknown"]
 
@@ -123,7 +134,10 @@ class trips_info:
         t = []
         for x,y,l in zip(boros_points.geometry.x, boros_points.geometry.y, label):
             t.append(plt.text(x,y,l,fontsize=8))
+        month_name ='January February March April May June July August September October November December'.split( )
+        plt.title(f'{month_name[month-1]} has the most trips')
         plt.show()
+        plt.clf()
 
     def structure(self):
         df = self.df

@@ -62,7 +62,12 @@ class geo:
     def map_locationID(self,location = 1):
         # by geopandas
         df = self.f[self.f['OBJECTID']==location]
-        point = self.get_centroid()[location]
+        def getXY(pt):
+            return (pt.x, pt.y)
+        centroidseries = self.f['geometry'].centroid
+        centroidlist = list(map(getXY, centroidseries))
+        centroid = dict(zip(self.l, centroidlist))
+        point = centroid[location]
         df.plot()
         plt.plot(point[0], point[1], 'ro')
         plt.show()
