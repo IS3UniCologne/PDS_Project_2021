@@ -7,6 +7,7 @@ import pandas as pd
 import seaborn as sns
 from scipy.stats import norm
 from yellowcab.model import *
+import sklearn
 
 def main():
         # Test geo() module,
@@ -57,19 +58,19 @@ def main():
     # print(d)
 #-----------------------------------------------------------------------------
     # # Create full NYC file
-    x = trips_input()
-    d = x.get_trips(fraction=0.1,optimize=True)
-    cols = 'tpep_dropoff_datetime tpep_pickup_datetime PULocationID DOLocationID'.split( )
-    t = d[cols]
-    y = trips_info(t)
-    df = y.get_position()
-    df2 = y.get_time()
-    df3 = y.get_duration()
-    nyc = pd.concat((df,df2),axis=1)
-    nyc['duration'] = df3.duration
-    nyc = nyc.drop(cols,axis=1)
-    full_nyc = pd.concat((nyc,d),axis=1)
-    full_nyc = full_nyc.drop(['tpep_dropoff_datetime', 'tpep_pickup_datetime'], axis=1)
+    # x = trips_input()
+    # d = x.get_trips(fraction=0.1,optimize=True)
+    # cols = 'tpep_dropoff_datetime tpep_pickup_datetime PULocationID DOLocationID'.split( )
+    # t = d[cols]
+    # y = trips_info(t)
+    # df = y.get_position()
+    # df2 = y.get_time()
+    # df3 = y.get_duration()
+    # nyc = pd.concat((df,df2),axis=1)
+    # nyc['duration'] = df3.duration
+    # nyc = nyc.drop(cols,axis=1)
+    # full_nyc = pd.concat((nyc,d),axis=1)
+    # full_nyc = full_nyc.drop(['tpep_dropoff_datetime', 'tpep_pickup_datetime'], axis=1)
     # #     #-------------------------------------
     #  #     # Plot duration distribution (2c)
     # cols = 'PUmonth PUhour PUweekday PUweekend duration'.split()
@@ -365,10 +366,20 @@ def main():
     # plt.clf()
 #-----------------------------------------------------------
     # Test model
-    y = model()
+    y = model_nyc()
     # df = y.transform()
-    df = y.train()
-    print(len(df))
+    df = y.predict_distance_nyc()
+    # df = y.predict_fare_nyc()
+    # df = y.predict_payment_type_nyc()
+    # x = model_queens()
+    # df = x.predict_distance_queens()
+    # df = x.predict_fare_queens()
+    # df = x.predict_payment_type_queens()
+    # print(sklearn.__version__)
+    # print(df.info())
+    # print(df.head())
+    print(df.shape, df.min(), df.max())
+    # df = y.predict()
     # print(df.info())
     # print(df.head())
 

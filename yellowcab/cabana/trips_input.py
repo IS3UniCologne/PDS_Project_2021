@@ -66,19 +66,13 @@ class trips_input:
             pass
         return d
 
-    # def get_queens(self):
-    #     qb = self.get_borough_locationID(borough='Queens')
-    #     raw = self.get_trips(fraction=1, optimize=True)
-    #     d = raw[raw.PULocationID.isin(qb)==True]
-    #     cols = 'tpep_dropoff_datetime tpep_pickup_datetime PULocationID DOLocationID'.split()
-    #     t = d[cols]
-    #     y = trips_info(t)
-    #     df = y.get_position()
-    #     df2 = y.get_time()
-    #     df3 = y.get_duration()
-    #     queens = pd.concat((df,df2),axis=1)
-    #     queens['duration'] = df3.duration
-    #     queens = queens.drop(cols,axis=1)
-    #     full_queens = pd.concat((queens,d),axis=1)
-    #     full_queens = full_queens.drop(['tpep_dropoff_datetime', 'tpep_pickup_datetime'], axis=1)
-    #     return full_queens
+    def get_queens(self):
+        qb = self.get_borough_locationID(borough='Queens')
+        f = '01 02 03 04 05 06 07 08 09 10 11 12'.split()
+        result = []
+        for i in f:
+            raw = pd.read_parquet(os.path.join(self.get_data_path(), '..', 'trip_data', f"{i}.parquet"),engine='pyarrow')
+            df = raw[raw.PULocationID.isin(qb)==True]
+            result.append(df)
+        full_queens = pd.concat(result)
+        return full_queens

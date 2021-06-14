@@ -6,11 +6,11 @@ from sklearn.model_selection import train_test_split, GridSearchCV, KFold
 from sklearn.linear_model import SGDRegressor, SGDClassifier
 from math import radians
 
-def transform_nyc(data=None):
+def transform_queens(data=None):
     np.random.seed(0)
     if data==None:
         x = trips_input()
-        d = x.get_trips(fraction=0.1, optimize=True)
+        d = x.get_queens()
     else:
         d = data
     cols = 'tpep_dropoff_datetime tpep_pickup_datetime PULocationID DOLocationID'.split()
@@ -19,13 +19,14 @@ def transform_nyc(data=None):
     df = y.get_position()
     df2 = y.get_time()
     df3 = y.get_duration()
-    nyc = pd.concat((df, df2), axis=1)
-    nyc['duration'] = df3.duration
-    nyc = nyc.drop(cols, axis=1)
-    full_nyc = pd.concat((nyc, d), axis=1)
+    queens = pd.concat((df, df2), axis=1)
+    queens['duration'] = df3.duration
+    queens = queens.drop(cols, axis=1)
+    full_queens = pd.concat((queens, d), axis=1)
+
 
     # Change cents to dollars
-    initial = full_nyc.drop(['tpep_dropoff_datetime', 'tpep_pickup_datetime'], axis=1)
+    initial = full_queens.drop(['tpep_dropoff_datetime', 'tpep_pickup_datetime'], axis=1)
     monetary = ['fare_amount', 'extra', 'mta_tax',
              'tip_amount', 'tolls_amount', 'total_amount']
     initial[monetary] = initial[monetary] / 100
@@ -78,19 +79,18 @@ def transform_nyc(data=None):
 
     ###LON LAT OF SOME SPECIFIC PLACES
     JFKairport = (-73.780968, 40.641766)
+    # JFKairport= (-73.78, 40.64)
 
-    # NWairport=(-74.172363, 40.735657)
-    NWairport = (-74.17, 40.74)
+    # Queens library = 40.757978766519294, -73.82900393688718
+    Queenslib = -73.83, 40.76
 
-    # Timesquare = (-73.98604331729206,40.75837054036599)
-    Timesquare = (-73.99, 40.76)
+    # LGDairport= 40.776902684722835, -73.87395517203288
+    LGDairport = -73.87, 40.78
 
-    # Wtc=  (-74.01335094122703,40.71315120718066)
-    Wtc = (-74.01, 40.71)
+    # marinomar= 40.77123716721885, -73.80129679098286
+    Marinomar = -73.80, 40.77
 
-    # Boa = (-73.9420433120473, 40.82320010657351)
-    Boa = (-73.94, 40.82)
-    L = [JFKairport, NWairport, Timesquare, Wtc, Boa]
+    L = [JFKairport, LGDairport, Queenslib, Marinomar]
 
     # Converting decimal lon lat to radians for each specific places mentioned above
     def detora(List):
@@ -134,7 +134,7 @@ def transform_nyc(data=None):
     predfpd = haversineindfpd(s1)
     df_new = predf.iloc[:, 1::]
     dfpd = predfpd.iloc[:, 1::]
-    dfname = df_new.rename(columns=dict(zip(np.arange(0, 10), ['tojfk', 'tonw', 'totimes', 'towtc', 'toboa'])))
+    dfname = df_new.rename(columns=dict(zip(np.arange(0,4),['tojfk','tolgd', 'toql','tomar'])))
     dfpdname = dfpd.rename(columns={0: 'pd'})
     Xfull = pd.concat((raw, dfname, dfpdname), axis=1)
     Xfull.drop(['PUlon', 'PUlat', 'DOlon', 'DOlat', 'PUlonra', 'PUlatra', 'DOlonra', 'DOlatra', 'PULocationID',
@@ -144,4 +144,3 @@ def transform_nyc(data=None):
     # rs.fit(Xfull)
     # Xscaled = pd.DataFrame(rs.transform(Xfull), index=Xfull.index, columns=Xfull.columns)
     return Xfull
-    # return raw
