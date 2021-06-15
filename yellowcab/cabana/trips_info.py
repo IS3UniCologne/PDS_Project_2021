@@ -22,11 +22,6 @@ class trips_info:
         self.df = dataframe
         self.g = gpd.read_file(os.path.join(utils.get_data_path(),'input','taxi_zones.geojson'))
 
-    def get_duration(self):
-        df = self.df
-        df['duration'] = df['tpep_dropoff_datetime']-df['tpep_pickup_datetime']
-        return df['duration']
-
         # Add new time columns of weekday, month and hour
     def get_time(self, column='tpep_pickup_datetime'):
         df = self.df
@@ -80,15 +75,15 @@ class trips_info:
         df.fillna(method='ffill', inplace=True)
         df[['PUlon', 'PUlat']] = pd.DataFrame(df['PUdummy'].tolist(), index=df.index)
         df = df.drop(['PUdummy'], axis=1)
-        df['PUlon'] = df['PUlon'].astype('float32').round(2)
-        df['PUlat'] = df['PUlat'].astype('float32').round(2)
+        df['PUlon'] = df['PUlon'].astype('float64')
+        df['PUlat'] = df['PUlat'].astype('float64')
 
         df['DOdummy'] = df['DOLocationID'].map(f)
         df.fillna(method='ffill', inplace=True)
         df[['DOlon', 'DOlat']] = pd.DataFrame(df['DOdummy'].tolist(), index=df.index)
         df = df.drop(['DOdummy'], axis=1)
-        df['DOlon'] = df['DOlon'].astype('float32').round(2)
-        df['DOlat'] = df['DOlat'].astype('float32').round(2)
+        df['DOlon'] = df['DOlon'].astype('float64')
+        df['DOlat'] = df['DOlat'].astype('float64')
         return df
 
     def outlier(self, series):

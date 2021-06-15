@@ -15,7 +15,6 @@ from sklearn.metrics import SCORERS
 class model_queens:
     def __init__(self,X=None):
         self.Xscaled = transform_queens()
-        self.X = X
 
     def transform(self,X):
         return transform_queens(X)
@@ -40,7 +39,8 @@ class model_queens:
 
         modelhya = SGDRegressor(random_state=0)
         hyperparameters = {'loss': ['squared_loss', 'huber', 'epsilon_insensitive'], 'alpha': np.linspace(0, 0.001, 3)}
-        grid = GridSearchCV(modelhya, hyperparameters, cv=5, scoring='neg_mean_absolute_error', n_jobs=-1)
+        grid = GridSearchCV(modelhya, hyperparameters, cv=5, scoring='neg_root_mean_squared_error', n_jobs=-1)
+        # grid = GridSearchCV(modelhya, hyperparameters, cv=5, scoring='neg_mean_absolute_error', n_jobs=-1)
         grid.fit(Xtrain, ytrain)
         comparison = pd.DataFrame(np.abs(grid.cv_results_['mean_test_score']), columns=['Loss'],
                                   index=['squared0', 'huber0', 'ep0', 'squared0.0005', 'huber0.0005', 'ep.0005',
@@ -49,10 +49,20 @@ class model_queens:
         model = modela.fit(X_train, y_train)
         filename = 'predict_distance_queens.pkl'
         # io.save_model(model, filename)
+
+        # Predict X
+        Xprocessed = pre_process_queens(X)
+        Xdropped = Xprocessed.drop(
+            ['trip_distance', 'pd', 'duration', 'passenger_count', 'payment_type', 'pay2', 'pay3', 'pay4', 'r2',
+             'r3', 'r4', 'r5', 'r6',
+             'fare_amount', 'extra', 'mta_tax', 'tip_amount', 'tolls_amount',
+             'improvement_surcharge', 'total_amount', 'congestion_surcharge',
+             'DOweekend', 'DOhoursin', 'DOhourcos', 'DOdaysin', 'DOdaycos', 'DOmonthsin', 'DOmonthcos'], axis=1)
+        Xnew = pd.DataFrame(transformer_x.transform(Xdropped), index=Xtrain.index, columns=Xtrain.columns)
         if X == None:
             res = model.predict(X_test)
         else:
-            res = model.predict(self.X)
+            res = model.predict(Xnew)
         predicted_distance = transformer_y.inverse_transform(np.reshape(res, (res.shape[0], 1)))
         return predicted_distance
 
@@ -74,9 +84,11 @@ class model_queens:
         X_test = pd.DataFrame(transformer_x.transform(Xtest), index=Xtest.index, columns=Xtest.columns)
         y_test = transformer_y.transform(ytest)
 
+        # Find the best hyperparameter
         modelhyb = SGDRegressor(random_state=0)
         hyperparameters = {'loss': ['squared_loss', 'huber'], 'alpha': [0, 0.0001]}
-        grid = GridSearchCV(modelhyb, hyperparameters, cv=5, scoring='neg_mean_absolute_error', n_jobs=-1)
+        grid = GridSearchCV(modelhyb, hyperparameters, cv=5, scoring='neg_root_mean_squared_error', n_jobs=-1)
+        # grid = GridSearchCV(modelhyb, hyperparameters, cv=5, scoring='neg_mean_absolute_error', n_jobs=-1)
         grid.fit(X_train, y_train)
         comparison = pd.DataFrame(np.abs(grid.cv_results_['mean_test_score']), columns=['Loss'],
                                   index=['squared0', 'huber0', 'squared0.0001', 'huber0.0001'])
@@ -102,6 +114,20 @@ class model_queens:
         finalmodelb.fit(col_train, y_train)
         filename = 'predict_fare_queens.pkl'
         res = finalmodelb.predict(col)
+
+        # Predict X
+        Xprocessed = pre_process_queens(X)
+        Xdropped = Xprocessed.drop(['fare_amount', 'payment_type',
+                                    'extra',
+                                    'mta_tax', 'tip_amount',
+                                    'tolls_amount', 'improvement_surcharge',
+                                    'total_amount', 'congestion_surcharge', 'trip_distance', 'duration'
+                                    ], axis=1)
+        Xnew = pd.DataFrame(transformer_x.transform(Xdropped), index=Xtrain.index, columns=Xtrain.columns)
+        if X == None:
+            res = finalmodelb.predict(X_test)
+        else:
+            res = finalmodelb.predict(Xnew)
         predicted_fare = transformer_y.inverse_transform(np.reshape(res,(res.shape[0],1)))
         return predicted_fare
         # io.save_model(finalmodelb,filename)
@@ -128,10 +154,16 @@ class model_queens:
         modelc = SGDClassifier(loss='hinge', random_state=0)
         model = modelc.fit(X_train, y_train)
         filename = 'predict_payment_type_queens.pkl'
+
+        # Predict X
+        Xprocessed = pre_process_queens(X)
+        Xdropped = Xprocessed.drop(['payment_type', 'pay2', 'pay3', 'pay4'], axis=1)
+        Xnew = pd.DataFrame(transformer_x.transform(Xdropped), index=Xtrain.index, columns=Xtrain.columns)
         if X == None:
             res = model.predict(X_test)
         else:
-            res = model.predict(self.X)
+            res = model.predict(Xnew)
         predicted_ptype = transformer_y.inverse_transform(np.reshape(res, (res.shape[0], 1)))
         return predicted_ptype
         # io.save_model(model, filename)
+

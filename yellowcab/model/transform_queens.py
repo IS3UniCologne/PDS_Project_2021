@@ -23,19 +23,25 @@ def transform_queens(data=None):
     queens['duration'] = df3.duration
     queens = queens.drop(cols, axis=1)
     full_queens = pd.concat((queens, d), axis=1)
+    return full_queens
 
-
-    # Change cents to dollars
+def pre_process_queens(full_queens):
     initial = full_queens.drop(['tpep_dropoff_datetime', 'tpep_pickup_datetime'], axis=1)
-    monetary = ['fare_amount', 'extra', 'mta_tax',
-             'tip_amount', 'tolls_amount', 'total_amount']
-    initial[monetary] = initial[monetary] / 100
+    # monetary = ['fare_amount', 'extra', 'mta_tax',
+    #          'tip_amount', 'tolls_amount', 'total_amount']
+    # initial[monetary] = initial[monetary] / 100
+
     #
-    # Change day from categories to number, duration from minutes to seconds
+    # Change day from categories to number
     dd = dict(zip(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], np.arange(0, 7)))
     initial['PUday'] = initial['PUweekday'].map(dd).astype('uint8')
     initial['DOday'] = initial['DOweekday'].map(dd).astype('uint8')
     initialdropped = initial.drop(['PUweekday', 'DOweekday'], axis=1)
+
+    initialdropped = initialdropped[(initialdropped.payment_type <= 6) & (initialdropped.RatecodeID <= 6)]
+    initialdropped = initialdropped[(initialdropped.PULocationID <= 263) & (initialdropped.DOLocationID <= 263)]
+    initialdropped = initialdropped[(initialdropped.passenger_count > 0) & (initialdropped.trip_distance > 0)]
+
 
     # Get dummies for payment_type and RatecodeID
     pay = pd.get_dummies(initialdropped['payment_type'], drop_first=True)
@@ -46,7 +52,9 @@ def transform_queens(data=None):
     #
     # DEALING WITH FEATURES THAT ARE ONLY MEANINGFUL WHEN IT IS >=0
     raw[['improvement_surcharge','congestion_surcharge']]= abs(raw[['improvement_surcharge','congestion_surcharge']])
-    #
+    raw = raw[raw.duration > 0]
+
+    # #
         # Speed conditions
     sc1 = (raw['trip_distance'] / raw['duration']) <= 0.009  # < 34MPH
     sc2 = (raw['trip_distance'] / raw['duration']) > 0.00097  # >3.5MPH
@@ -57,6 +65,7 @@ def transform_queens(data=None):
     fc2 = raw['fare_amount']>raw['trip_distance']*2.5
     raw = raw[fc1 & fc2]
 
+    #
         # SIN COS TRANSFORM FOR MONTH DAY HOUR
     raw['PUhoursin'] = np.sin(raw['PUhour'] * (2. * np.pi / 24))  # coordinate values on Oy
     raw['PUhourcos'] = np.cos(raw['PUhour'] * (2. * np.pi / 24))  # coordinate values on Ox
@@ -138,7 +147,7 @@ def transform_queens(data=None):
     dfpdname = dfpd.rename(columns={0: 'pd'})
     Xfull = pd.concat((raw, dfname, dfpdname), axis=1)
     Xfull.drop(['PUlon', 'PUlat', 'DOlon', 'DOlat', 'PUlonra', 'PUlatra', 'DOlonra', 'DOlatra', 'PULocationID',
-                'DOLocationID'], axis=1, inplace=True)
+                'DOLocationID','pay5'], axis=1, inplace=True)
 
     # rs = RobustScaler()
     # rs.fit(Xfull)

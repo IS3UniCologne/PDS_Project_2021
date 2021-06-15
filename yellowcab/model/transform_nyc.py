@@ -23,14 +23,15 @@ def transform_nyc(data=None):
     nyc['duration'] = df3.duration
     nyc = nyc.drop(cols, axis=1)
     full_nyc = pd.concat((nyc, d), axis=1)
+    return full_nyc
 
-    # Change cents to dollars
+def pre_process_nyc(full_nyc):
     initial = full_nyc.drop(['tpep_dropoff_datetime', 'tpep_pickup_datetime'], axis=1)
-    monetary = ['fare_amount', 'extra', 'mta_tax',
-             'tip_amount', 'tolls_amount', 'total_amount']
-    initial[monetary] = initial[monetary] / 100
-    #
-    # Change day from categories to number, duration from minutes to seconds
+    # monetary = ['fare_amount', 'extra', 'mta_tax',
+    #          'tip_amount', 'tolls_amount', 'total_amount']
+    # initial[monetary] = initial[monetary] / 100
+    # #
+    # Change day from categories to number
     dd = dict(zip(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], np.arange(0, 7)))
     initial['PUday'] = initial['PUweekday'].map(dd).astype('uint8')
     initial['DOday'] = initial['DOweekday'].map(dd).astype('uint8')
@@ -45,6 +46,7 @@ def transform_nyc(data=None):
     #
     # DEALING WITH FEATURES THAT ARE ONLY MEANINGFUL WHEN IT IS >=0
     raw[['improvement_surcharge','congestion_surcharge']]= abs(raw[['improvement_surcharge','congestion_surcharge']])
+    raw = raw[raw.duration>0]
     #
         # Speed conditions
     sc1 = (raw['trip_distance'] / raw['duration']) <= 0.009  # < 34MPH
